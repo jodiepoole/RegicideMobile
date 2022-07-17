@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { BOSS_DAMAGE, BOSS_HEALTH, PHASE_DISCARD, PHASE_PLAY, PHASE_SETUP } from "../lib/constants.js";
-import { generateTavernDeck, generateCastleDeck, drawCards, playCards, discardCards, nextBoss, reshuffleCards, bossKilled } from "../lib/regicideUtils.js";
+import { sumCardValues, generateTavernDeck, generateCastleDeck, drawCards, playCards, discardCards, nextBoss, reshuffleCards, bossKilled } from "../lib/regicideUtils.js";
 import Boss from "./Boss.js";
 import Hand from "./Hand.js";
+import Decks from './Decks.js'
 
 const Game = () => {
     const [phase, setPhase] = useState(PHASE_SETUP);
@@ -15,6 +16,18 @@ const Game = () => {
     const [tavernDeck, setTavernDeck] = useState(generateTavernDeck());
     const [castleDeck, setCastleDeck] = useState(generateCastleDeck());
     const [enemyDamagePile, setEnemyDamagePile] = useState([]);
+
+    const resetGame = () => {  
+        setCurrentBoss({});
+        setCurrentBossHealth(0);
+        setPlayerBlocking(0);
+        setHandOfCards([]);
+        setDiscardPile([]);
+        setTavernDeck(generateTavernDeck());
+        setCastleDeck(generateCastleDeck());
+        setEnemyDamagePile([]);
+        setPhase(PHASE_SETUP);
+    }
 
     const getNextBoss = () => {
         const result = nextBoss(castleDeck);
@@ -43,12 +56,16 @@ const Game = () => {
         setDiscardPile(result.discardPile);
     }
 
+    const yieldTurn = () => {
+        draw(1);
+        setPhase(PHASE_DISCARD);
+    }
+
     const play = (cards) => {
         const result = playCards(enemyDamagePile, handOfCards, currentBoss.suit, cards);
         setEnemyDamagePile(result.enemyDamagePile);
         setHandOfCards(result.handOfCards);
         setPlayerBlocking(0);
-        console.log(result)
 
         if(result.reshuffle !== 0) {
             reshuffle(result.reshuffle);
@@ -69,9 +86,7 @@ const Game = () => {
             if(BOSS_DAMAGE[currentBoss.value] - result.blocking > 0) {
                 setPhase(PHASE_DISCARD);
             }
-        }
-
-        
+        }  
     }
 
     const discard = (cards) => {
@@ -85,15 +100,22 @@ const Game = () => {
         draw(8);
         getNextBoss();
         setPhase(PHASE_PLAY);
+    } else if (phase === PHASE_DISCARD && sumCardValues(handOfCards) < BOSS_DAMAGE[currentBoss.value]) {
+        resetGame();
     }
 
     return (
         <View style={styles.container}>
-            <Decks/>
             <Boss
                 boss={currentBoss}
                 currentBossHealth={currentBossHealth}
                 maxBossHealth={BOSS_HEALTH[currentBoss.value]}
+            />
+            <Decks
+                discardPile={discardPile}
+                tavernDeck={tavernDeck}
+                castleDeck={castleDeck}
+                enemyDamagePile={enemyDamagePile}
             />
             <Hand 
                 handOfCards={handOfCards}
@@ -102,6 +124,7 @@ const Game = () => {
                 playerBlocking={playerBlocking}
                 play={play}
                 discard={discard}
+                yieldTurn={yieldTurn}
             />
         </View>
     );
@@ -113,8 +136,6 @@ const styles = StyleSheet.create({
         width: "100%",
         height: "100%",
         backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
     },
 });
 

@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet, Text, Button } from 'react-native';
+import { View, StyleSheet, Text, Button, Image } from 'react-native';
 import { CARD_SELECTED_DISCARD, CARD_SELECTED_PLAY, PHASE_DISCARD, PHASE_PLAY } from '../lib/constants';
 import { validateCombo, sumCardValues } from '../lib/regicideUtils';
+import images from '../lib/images';
 
 const CardView = ({index, card, discarding, selectedCards, toggleSelectedCards}) => {
     const [selected, setSelected] = useState(false);
@@ -31,36 +32,23 @@ const CardView = ({index, card, discarding, selectedCards, toggleSelectedCards})
         }
     }, [selectedCards.length, discarding])
 
-
     return (
         <View 
             style={selected ? (discarding ? styles.cardSelectedDiscarding: styles.cardSelected) : (cardDisabled ? styles.cardDisabled : styles.card)} 
             onTouchStart={toggleSelected}
         >
-            <Text style={styles.cardText}>
-                {(card.value === 1 ? "Ace" : card.value ) + "\n"}
-                {"OF\n"}
-                {card.suit}
-            </Text>
-            
+            <Image source={images[(card.suit + card.value).toLowerCase()]} style={styles.cardImage}/>
         </View>
     );
 }
 
-const Hand = ({handOfCards, phase, enemyDamage, playerBlocking, currentEnemyHealth, play, discard}) => {
+const Hand = ({handOfCards, phase, enemyDamage, playerBlocking, currentEnemyHealth, play, discard, yieldTurn}) => {
 
     const [state, updateState] = useState();
     const forceUpdate = useCallback(() => updateState({}), []);
     const [selectedCards, setSelectedCards] = useState([]);
-
-    useEffect(() => {
-        if(phase === PHASE_DISCARD) {
-            const handTotal = sumCardValues(handOfCards);
-            if(handTotal < enemyDamage) {
-                console.log("GAME OVER")
-            }
-        }
-    }, [phase]);
+    const cardsSelectedLessThanDamage = sumCardValues(selectedCards) < (enemyDamage - playerBlocking);
+    const cardsSelected = selectedCards.length !== 0;
 
     const toggleSelectedCards = (index) => {
         let tempSelectedCards = selectedCards
@@ -81,7 +69,11 @@ const Hand = ({handOfCards, phase, enemyDamage, playerBlocking, currentEnemyHeal
 
     const act = () => {
         if(phase === PHASE_PLAY) {
-            play(selectedCards)
+            if(cardsSelected) {
+                play(selectedCards)
+            } else {
+                yieldTurn();
+            }
         } else {
             discard(selectedCards)
         }
@@ -91,8 +83,8 @@ const Hand = ({handOfCards, phase, enemyDamage, playerBlocking, currentEnemyHeal
     return (
         <View style={styles.handContainer}>
             <Button 
-                title={"Submit"} 
-                disabled={phase === PHASE_PLAY ? (selectedCards.length === 0) : (sumCardValues(selectedCards) < (enemyDamage - playerBlocking))} 
+                title={phase === PHASE_PLAY ? (cardsSelected ? "Submit" : "Yield") : "Discard"} 
+                disabled={phase === PHASE_PLAY ? !selectedCards : cardsSelectedLessThanDamage} 
                 onPress={act}
             />
             <View style={styles.cardContainer} >
@@ -120,54 +112,58 @@ const styles = StyleSheet.create({
     },
     cardContainer: {
         backgroundColor: '#fff',
-        alignItems: "center",
-        justifyContent: "space-between",
-        flexDirection: "row"
+        flexDirection: "row",
     },
     card: {
-        width:60,
-        height:100,
-        margin:2,
-        borderWidth: 2,
-        borderRadius: 2,
+        width:55,
+        height:85,
+        margin:5,
+        borderColor: 'black',
+        borderWidth: 1,
         display: "flex",
         backgroundColor: 'grey',
         justifyContent: "center"
     },
     cardSelected: {
-        width:61,
-        height:101,
-        margin:2,
-        borderWidth: 2,
-        borderRadius: 2,
-        borderColor: CARD_SELECTED_PLAY,
+        width:55,
+        height:85,
+        margin:5,
+        borderColor: 'black',
+        borderWidth: 1,
         display: "flex",
-        backgroundColor: 'grey',
-        justifyContent: "center"
+        backgroundColor: CARD_SELECTED_PLAY,
+        justifyContent: "center",
+        opacity: 0.5
     },
     cardSelectedDiscarding: {
-        width:61,
-        height:101,
-        margin:2,
-        borderWidth: 2,
-        borderRadius: 2,
-        borderColor: CARD_SELECTED_DISCARD,
+        width:55,
+        height:85,
+        margin:5,
+        borderColor: 'black',
+        borderWidth: 1,
         display: "flex",
-        backgroundColor: 'grey',
-        justifyContent: "center"
+        backgroundColor: CARD_SELECTED_DISCARD,
+        justifyContent: "center",
+        opacity: 0.5
     },
     cardDisabled: {
-        width:60,
-        height:100,
-        margin:2,
+        width:55,
+        height:85,
+        margin:5,
+        borderColor: 'black',
+        borderWidth: 1,
         display: "flex",
         backgroundColor: 'grey',
         justifyContent: "center",
-        opacity: 0.5,
+        opacity: 0.5
     },
     cardText: {
         textAlign: "center",
         fontSize: 10,
+    },
+    cardImage: {
+        width:53,
+        height:84,
     }
 });
 
