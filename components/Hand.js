@@ -105,6 +105,7 @@ const Hand = ({handOfCards, phase, enemyDamage, playerBlocking, currentEnemyHeal
 
 const styles = StyleSheet.create({
     handContainer: {
+        justifyContent: 'center',
         alignItems: 'center',
         padding: 10,
         position: 'absolute',

@@ -22,9 +22,12 @@ const Decks = ({discardPile, tavernDeck, castleDeck, enemyDamagePile}) => {
 
 const styles = StyleSheet.create({
     container: {
-        left: 1,
-        top: 1,
+        position: 'absolute',
+        flex: 1,
         backgroundColor: '#fff',
+        padding: 10,
+        top: "3%",
+        left: "3%",
     },
 });
 

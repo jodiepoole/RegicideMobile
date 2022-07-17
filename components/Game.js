@@ -117,15 +117,17 @@ const Game = () => {
                 castleDeck={castleDeck}
                 enemyDamagePile={enemyDamagePile}
             />
-            <Hand 
-                handOfCards={handOfCards}
-                phase={phase}
-                enemyDamage={BOSS_DAMAGE[currentBoss.value]}
-                playerBlocking={playerBlocking}
-                play={play}
-                discard={discard}
-                yieldTurn={yieldTurn}
-            />
+            <View style={styles.handContainer}>
+                <Hand 
+                    handOfCards={handOfCards}
+                    phase={phase}
+                    enemyDamage={BOSS_DAMAGE[currentBoss.value]}
+                    playerBlocking={playerBlocking}
+                    play={play}
+                    discard={discard}
+                    yieldTurn={yieldTurn}
+                />
+            </View>
         </View>
     );
 }
@@ -136,6 +138,12 @@ const styles = StyleSheet.create({
         width: "100%",
         height: "100%",
         backgroundColor: '#fff',
+    },
+    handContainer: {
+        flex: 1,
+        width: "100%",
+        height: "100%",
+        alignItems: 'center',
     },
 });
 

@@ -18,10 +18,11 @@ const Boss = ({boss, currentBossHealth, maxBossHealth}) => {
 
 const styles = StyleSheet.create({
     bossContainer: {
+        position: 'absolute',
         alignItems: 'center',
         padding: 10,
-        top: 5
-        
+        top: "3%",
+        left: "39%",
     },
     bossCard: {
         width:56,
